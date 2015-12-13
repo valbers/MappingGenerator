@@ -4,3 +4,4 @@ public partial class Mapper1 : Mapper1Base
     {
     }
 }
+

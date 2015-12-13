@@ -76,9 +76,7 @@
     <Compile Include="TestOutput\Mapper1.cs" />
     <Compile Include="TestOutput\Mapper1Base.cs" />
     <Compile Include="TestOutput\Mapper2.cs" />
-    <Compile Include="TestOutput\Mapper2Base.cs" />
     <Compile Include="TestOutput\Mapper3.cs" />
-    <Compile Include="TestOutput\Mapper3Base.cs" />
     <Compile Include="TestOutput\MyClass.cs" />
   </ItemGroup>
   <ItemGroup>

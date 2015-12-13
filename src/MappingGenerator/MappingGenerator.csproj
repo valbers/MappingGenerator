@@ -39,6 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassFile.cs" />
+    <Compile Include="ClassFiles.cs" />
     <Compile Include="ClassModifier.cs" />
     <Compile Include="Conventions.cs" />
     <Compile Include="DefaultClassRenderer.cs" />
@@ -49,6 +51,7 @@
     <Compile Include="IInstructionGenerator.cs" />
     <Compile Include="IInstructionVisitor.cs" />
     <Compile Include="IMappingClassBuilder.cs" />
+    <Compile Include="IMappingClassCreator.cs" />
     <Compile Include="IMappingCreator.cs" />
     <Compile Include="IMappingsContainer.cs" />
     <Compile Include="InstructionFormatter.cs" />
@@ -71,6 +74,7 @@
     <Compile Include="MappingClassCreator.cs" />
     <Compile Include="MappingConfiguration.cs" />
     <Compile Include="MappingCreator.cs" />
+    <Compile Include="MappingGenerationManager.cs" />
     <Compile Include="MappingRule.cs" />
     <Compile Include="MappingRuleParticipant.cs" />
     <Compile Include="MappingsContainer.cs" />

@@ -40,6 +40,8 @@ namespace MappingGenerator
             CloseCodeBlock(result, ref indentationLevel);
             if(withNamespace) CloseCodeBlock(result, ref indentationLevel);
 
+            result.AppendLine();
+
             textWriter.Write(result);
         }
 

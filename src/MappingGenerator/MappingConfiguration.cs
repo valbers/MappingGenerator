@@ -9,6 +9,8 @@ namespace MappingGenerator
     public interface IMappingConfiguration
     {
         bool IsMappingConfigured(Type source, Type destination);
+        void Register(Type source, Type destination);
+        IEnumerable<MappingSpecification> AllMappings();
     }
 
     public class MappingConfiguration : IMappingConfiguration

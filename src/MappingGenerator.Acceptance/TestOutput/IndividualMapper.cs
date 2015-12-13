@@ -5,3 +5,4 @@ namespace AutoGeneration
         TDestination Map(System.Func<TDestination, TSource> sourceSelector);
     }
 }
+

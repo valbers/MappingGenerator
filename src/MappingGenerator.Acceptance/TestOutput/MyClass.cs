@@ -6,3 +6,4 @@ public class MyClass
         _myDependency = myDependency;
     }
 }
+

@@ -1,13 +1,10 @@
 ﻿using MappingGenerator.LangObjects;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MappingGenerator
 {
-    public class MappingClassCreator
+    public class MappingClassCreator : IMappingClassCreator
     {
         private readonly IInstructionGenerator _instructionGenerator;
         private readonly IConversionInstructionGeneratorFactory _conversionInstructionGeneratorFactory;
@@ -77,7 +74,7 @@ namespace MappingGenerator
             return method;
         }
 
-        public ClassDefinition CreateGlobalMapperInterfaceDefinition(MappingConfiguration mappingConfiguration)
+        public ClassDefinition CreateGlobalMapperInterfaceDefinition(IMappingConfiguration mappingConfiguration)
         {
             var globalMapperInterface = Conventions.GlobalMapperInterfaceDefinition();
 
@@ -138,34 +135,14 @@ namespace MappingGenerator
             };
 
             return mappingMethod;
+        }
 
-            //var aToBMapperBaseMapper = new ClassDefinition
-            //{
-            //    Name = Conventions.AtoBMapperBaseClassName(source, destination)
-            //};
-            //return new MethodDefinition
-            //{
-            //    AccessModifier = AccessModifier.Public,
-            //    ReturnType = destination,
-            //    Signature = new MethodSignature
-            //    {
-            //        Name = string.Format(Conventions.MethodNameForMapPropertyAtoPropertyB(source, destination)),
-            //        Parameters = new[]
-            //        {
-            //            new MethodParameter
-            //            {
-            //                Name = Conventions.MapToPropertySourceParameterName(),
-            //                ParameterType = source
-            //            }
-            //        }
-            //    },
-            //    Body = new[]
-            //    {
-            //        _instructionGenerator.ReturnValue(
-            //        _instructionGenerator.CallMethod(Conventions.FieldName(aToBMapperBaseMapper),
-            //                                         Conventions.MainMappingMethodName(),
-            //                                         Conventions.MapToPropertySourceParameterName()).Code) }
-            //};
+        public ClassDefinition CreateGlobalMapperClassDefinition(IMappingConfiguration mappingConfiguration)
+        {
+            var globalMapperInterfaceDefinition = CreateGlobalMapperInterfaceDefinition(mappingConfiguration);
+            globalMapperInterfaceDefinition.IsInterface = false;
+            globalMapperInterfaceDefinition.Name.TrimStart('I');
+            return globalMapperInterfaceDefinition;
         }
     }
 }
