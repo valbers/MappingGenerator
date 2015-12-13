@@ -166,7 +166,7 @@ namespace MappingGenerator.Acceptance
                                                                {
                                                                    new IdentityConversionInstructionGenerator(instructionGenerator),
                                                                    new MappingBasedConversionInstructionGenerator(mappingConfiguration, instructionGenerator),
-                                                                   new NotImplementedConversionInstructionGenerator()
+                                                                   new DefaultValueConversionInstructionGenerator()
                                                                });
             _mappingClassCreator = new MappingClassCreator(instructionGenerator,
                                                            conversionInstructionGeneratorFactory,

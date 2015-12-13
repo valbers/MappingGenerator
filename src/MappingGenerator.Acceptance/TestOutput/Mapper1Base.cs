@@ -44,6 +44,10 @@ public abstract partial class Mapper2Base : AutoGeneration.IMapper<System.Collec
     {
         _mapper = mapper;
     }
+    public virtual System.Int32 MapCapacity(System.Collections.Generic.IList<System.String> source)
+    {
+        return default(System.Int32);
+    }
     protected virtual System.Collections.Generic.List<System.String> CreateDestination(System.Collections.Generic.IList<System.String> source)
     {
         return new System.Collections.Generic.List<System.String>();
@@ -57,6 +61,7 @@ public abstract partial class Mapper2Base : AutoGeneration.IMapper<System.Collec
         }
         System.Collections.Generic.List<System.String> destination;
         destination = CreateDestination(source);
+        destination.Capacity = MapCapacity(source);
         return destination;
     }
 }
@@ -80,6 +85,35 @@ public abstract partial class Mapper3Base : AutoGeneration.IMapper<MappingGenera
     {
         var source = sourceSelector(default(MappingGenerator.Acceptance.TestDataObjects.Bar));
         if (source == default(MappingGenerator.Acceptance.TestDataObjects.Foo))
+        {
+            return default(MappingGenerator.Acceptance.TestDataObjects.Bar);
+        }
+        MappingGenerator.Acceptance.TestDataObjects.Bar destination;
+        destination = CreateDestination(source);
+        destination.MyProperty = MapMyProperty(source);
+        return destination;
+    }
+}
+
+public abstract partial class Mapper4Base : AutoGeneration.IMapper<MappingGenerator.Acceptance.TestDataObjects.ComplexSource, MappingGenerator.Acceptance.TestDataObjects.Bar>
+{
+    private System.Func<AutoGeneration.IMapper> _mapper;
+    public Mapper4Base(System.Func<AutoGeneration.IMapper> mapper)
+    {
+        _mapper = mapper;
+    }
+    public virtual System.Int32 MapMyProperty(MappingGenerator.Acceptance.TestDataObjects.ComplexSource source)
+    {
+        return default(System.Int32);
+    }
+    protected virtual MappingGenerator.Acceptance.TestDataObjects.Bar CreateDestination(MappingGenerator.Acceptance.TestDataObjects.ComplexSource source)
+    {
+        return new MappingGenerator.Acceptance.TestDataObjects.Bar();
+    }
+    public virtual MappingGenerator.Acceptance.TestDataObjects.Bar Map(System.Func<MappingGenerator.Acceptance.TestDataObjects.Bar, MappingGenerator.Acceptance.TestDataObjects.ComplexSource> sourceSelector)
+    {
+        var source = sourceSelector(default(MappingGenerator.Acceptance.TestDataObjects.Bar));
+        if (source == default(MappingGenerator.Acceptance.TestDataObjects.ComplexSource))
         {
             return default(MappingGenerator.Acceptance.TestDataObjects.Bar);
         }

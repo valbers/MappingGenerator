@@ -31,11 +31,11 @@ namespace MappingGenerator
             var sourceProperties = GetProperties(source);
             var destProperties = GetProperties(dest);
 
-            foreach(var sourceProp in sourceProperties)
+            foreach(var destProp in destProperties.Where(x => x.CanWrite))
             {
-                var destProp = destProperties.FirstOrDefault(x => DoPropertiesMatch(sourceProp, x));
-                if (destProp == null)
-                    continue;
+                dynamic sourceProp = sourceProperties.FirstOrDefault(x => DoPropertiesMatch(destProp, x));
+                if (sourceProp == null)
+                    sourceProp = new { Name = source.Name, PropertyType = source };
 
                 yield return new MappingRule
                 {

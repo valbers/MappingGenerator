@@ -60,7 +60,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="DefaultClassRendererTests.cs" />
     <Compile Include="Integration.cs" />
     <Compile Include="TestDataObjects\Bar.cs" />
@@ -70,13 +69,7 @@
     <Compile Include="MappingCreatorAcceptance.cs" />
     <Compile Include="TestDataObjects\Foo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestOutput\IMapper.cs" />
     <Compile Include="TestOutput\IMyDependency.cs" />
-    <Compile Include="TestOutput\IndividualMapper.cs" />
-    <Compile Include="TestOutput\Mapper1.cs" />
-    <Compile Include="TestOutput\Mapper1Base.cs" />
-    <Compile Include="TestOutput\Mapper2.cs" />
-    <Compile Include="TestOutput\Mapper3.cs" />
     <Compile Include="TestOutput\MyClass.cs" />
   </ItemGroup>
   <ItemGroup>

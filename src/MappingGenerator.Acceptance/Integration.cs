@@ -21,7 +21,7 @@ namespace MappingGenerator.Acceptance
             {
                 new IdentityConversionInstructionGenerator(instructionGenerator),
                 new MappingBasedConversionInstructionGenerator(mappingConfiguration, instructionGenerator),
-                new NotImplementedConversionInstructionGenerator()
+                new DefaultValueConversionInstructionGenerator()
             });
             var mappingCreator = new MappingCreator();
             var mappingClassCreator = new MappingClassCreator(instructionGenerator, conversionInstructionGeneratorFactory, new ClassModifier(instructionGenerator), new MappingClassBuilder(conversionInstructionGeneratorFactory, instructionGenerator));
@@ -31,6 +31,7 @@ namespace MappingGenerator.Acceptance
             mappingConfiguration.Register(typeof(ComplexSource), typeof(ComplexDestination));
             mappingConfiguration.Register(typeof(IList<string>), typeof(List<string>));
             mappingConfiguration.Register(typeof(Foo), typeof(Bar));
+            mappingConfiguration.Register(typeof(ComplexSource), typeof(Bar));
 
             foreach (var classFile in mappingGeneratorManager.BuildClassFiles(mappingConfiguration))
                 OutputFile(classRenderer, classFile);
