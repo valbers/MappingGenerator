@@ -6,7 +6,7 @@ open Records
 
 module Operations = 
 
-    let private createMappingRules source dest = 
+    let private createMappingRules source dest =
         let getProperties (aType:Type) = 
             aType.GetProperties()
             |> Seq.where (fun x -> x.GetIndexParameters() |> Seq.isEmpty)
@@ -14,8 +14,8 @@ module Operations =
         let sourceProperties = getProperties source
         let destProperties = getProperties dest
 
-        let findFirstPropertyMatching (sourceProp: PropertyInfo seq) (toBeMatched: PropertyInfo) =
-            match (sourceProp |> Seq.tryFind (fun x -> System.String.Compare(x.Name, toBeMatched.Name, ignoreCase = true) = 0)) with
+        let findFirstPropertyMatching (toBeMatched: PropertyInfo) (sourceProps: PropertyInfo seq) =
+            match (sourceProps |> Seq.tryFind (fun x -> System.String.Compare(x.Name, toBeMatched.Name, ignoreCase = true) = 0)) with
             | Some value -> (value.Name, value.PropertyType)
             | None -> (source.Name, source)
 
@@ -30,7 +30,7 @@ module Operations =
 
         destProperties
         |> Seq.where (fun x -> x.CanWrite)
-        |> Seq.map (fun tobeMatched -> (findFirstPropertyMatching sourceProperties tobeMatched, tobeMatched))
+        |> Seq.map (fun x -> ((sourceProperties |> findFirstPropertyMatching x), x))
         |> Seq.map mapTwoPropertyInfosToAMappingRule
 
     let createMapping source dest : Mapping =

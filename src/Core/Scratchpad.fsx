@@ -1,5 +1,21 @@
-﻿#load "Library.fs"
+﻿#load "Mapping\\Records.fs"
+#load "Mapping\\Operations.fs"
 
-open Core.Say
+open Mapping.Records
+open Mapping.Operations
+open Microsoft.FSharp.Collections
 
-hello "Valber"
+type A =
+  { Foo: string
+    Bar: int 
+    Fizz: decimal }
+
+type B =
+  { Foo: string
+    Bar: int }
+
+//let mapping = createMapping typeof<A> typeof<B>
+
+let mappingRules = createMappingRules typeof<A> typeof<B>
+
+printfn "mappingRules 1 %A" mappingRules
