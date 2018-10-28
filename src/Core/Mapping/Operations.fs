@@ -12,24 +12,22 @@ module Operations =
             |> Seq.where (fun x -> x.GetIndexParameters() |> Seq.isEmpty)
 
         let sourceProperties = getProperties source
-        let destProperties = getProperties dest
+        let destProperties = (getProperties >> Seq.where (fun x -> x.CanWrite)) dest
 
         let findFirstPropertyMatching (toBeMatched: PropertyInfo) (sourceProps: PropertyInfo seq) =
             match (sourceProps |> Seq.tryFind (fun x -> System.String.Compare(x.Name, toBeMatched.Name, ignoreCase = true) = 0)) with
-            | Some value -> (value.Name, value.PropertyType)
-            | None -> (source.Name, source)
+            | Some value -> { Name = value.Name
+                              Type = value.PropertyType }
+            | None -> { Name = source.Name
+                        Type = source }
 
-        let mapTwoPropertyInfosToAMappingRule (source: string*Type, dest: PropertyInfo) =
-            let sourceName, sourcePropertyType = source
-            { Source = 
-                { Name = sourceName
-                  Type = sourcePropertyType }
+        let mapTwoPropertyInfosToAMappingRule (source: MappingRuleParticipant, dest: PropertyInfo) =
+            { Source = source 
               Destination = 
                 { Name = dest.Name
                   Type = dest.PropertyType } }
 
         destProperties
-        |> Seq.where (fun x -> x.CanWrite)
         |> Seq.map (fun x -> ((sourceProperties |> findFirstPropertyMatching x), x))
         |> Seq.map mapTwoPropertyInfosToAMappingRule
 
