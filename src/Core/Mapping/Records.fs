@@ -14,3 +14,7 @@ module Records =
         { Source: System.Type
           Destination: System.Type
           PropertiesMappingRules: MappingRule seq }
+
+    type MappingSpecification =
+        { Source: System.Type
+          Destination: System.Type }

@@ -21,7 +21,7 @@ module Operations =
             | None -> { Name = source.Name
                         Type = source }
 
-        let mapTwoPropertyInfosToAMappingRule (source: MappingRuleParticipant, dest: PropertyInfo) =
+        let mapTwoPropertyInfosToAMappingRule (source: MappingRuleParticipant, dest: PropertyInfo): MappingRule =
             { Source = source 
               Destination = 
                 { Name = dest.Name

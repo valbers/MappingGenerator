@@ -17,7 +17,7 @@ type MutableB =
 
 [<Fact>]
 let ``"createMapping" maps properties with same name`` () =
-    let mappingRules = (createMapping typeof<MutableA> typeof<MutableB>).PropertiesMappingRules
+    let mappingRules: MappingRule seq = (createMapping typeof<MutableA> typeof<MutableB>).PropertiesMappingRules
     Assert.Equal(2, mappingRules |> Seq.length)
     Assert.Equal("Foo", (mappingRules |> Seq.item 0).Source.Name)
     Assert.Equal("String", (mappingRules |> Seq.item 0).Source.Type.Name)
