@@ -33,11 +33,11 @@ module Records =
 
     type ClassDefinition =
         { IsInterface: bool
-          Namespace: string
+          Namespace: string option
           AccessModifier: AccessModifier
           OtherModifiers: Modifier seq
           Name: string 
-          BaseClass: ClassDefinition
+          BaseClass: ClassDefinition option
           InstanceVariables: InstanceVariable seq
           Methods: MethodDefinition seq
           GenericArguments: ClassDefinition seq
