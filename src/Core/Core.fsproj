@@ -5,12 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Mapping\Records.fs" />
-    <Compile Include="Mapping\Operations.fs" />
-    <Compile Include="CodeGeneration\Records.fs" />
-    <Compile Include="CodeGeneration\Operations.fs" />
+    <Compile Include="Records\CodeGeneration\Records.fs" />
+    <Compile Include="Records\Mapping\Records.fs" />
+    <Compile Include="Operations\CodeGeneration\Operations.fs" />
+    <Compile Include="Operations\Mapping\Operations.fs" />
     <None Include="Scratchpad.fsx" />
-    <Compile Include="Library.fs" />
   </ItemGroup>
 
 </Project>

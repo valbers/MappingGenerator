@@ -1,7 +1,7 @@
-namespace CodeGeneration.Mapping
+namespace CodeGeneration
 
+open CodeGeneration.Records
 open Mapping.Records
-open Records
 
 module CodeGenerationOperations =
 

@@ -2,7 +2,7 @@
 
 open System
 open System.Reflection
-open Records
+open Mapping.Records
 
 module Operations = 
 

@@ -1,4 +1,4 @@
-namespace CodeGeneration.Mapping
+namespace CodeGeneration
 
 module Records =
 
