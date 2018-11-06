@@ -7,8 +7,9 @@
   <ItemGroup>
     <Compile Include="Records\CodeGeneration\Records.fs" />
     <Compile Include="Records\Mapping\Records.fs" />
-    <Compile Include="Operations\CodeGeneration\Operations.fs" />
+    <Compile Include="Operations\Conventions\Operations.fs" />
     <Compile Include="Operations\Mapping\Operations.fs" />
+    <Compile Include="Operations\CodeGeneration\Operations.fs" />
     <None Include="Scratchpad.fsx" />
   </ItemGroup>
 

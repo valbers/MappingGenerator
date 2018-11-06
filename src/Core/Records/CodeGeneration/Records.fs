@@ -52,7 +52,7 @@ module Records =
         { AccessModifier: AccessModifier
           OtherModifiers: Modifier seq
           Signature: MethodSignature
-          ReturnType: ClassDefinition
+          ReturnType: ClassDefinition option
           Body: Instruction seq}
     and MethodSignature = 
         { Name: string
