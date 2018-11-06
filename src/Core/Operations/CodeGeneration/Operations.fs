@@ -96,21 +96,43 @@ module Operations =
             IsInterface = false
             Name = globalMapperInterface.Name.TrimStart('I') }
 
-    let buildClassFiles (mappingSpecifications: MappingSpecification seq): ClassDefinition seq =
-        let mappingClasses, _ =
+    let buildClassFiles (mappingSpecifications: MappingSpecification seq): ClassFile seq =
+        let mappingClasses, baseMappingClasses, _ =
             mappingSpecifications
             |> Seq.fold (fun state item ->
-                            let x, i = state
-                            let currTargetItem =
+                            let x, y, i = state
+                            let mappingClass =
                                 Mapping.Operations.createMapping item.Source item.Destination
                                 |> createMappingClass (sprintf "Mapper%d" i)
-                            let toBeAppended =
-                                match currTargetItem.BaseClass with
-                                | Some baseClass -> Seq.ofList [currTargetItem; baseClass]
-                                | None -> Seq.ofList [currTargetItem]
-                            Seq.append x toBeAppended, i+1) (Seq.empty, 0)
-        [
-            createGlobalMapperInterfaceDefinition mappingSpecifications
-            createGlobalMapperClassDefinition mappingSpecifications
-        ]
-        |> Seq.append mappingClasses
+                            let baseMappingClasses =
+                                match mappingClass.BaseClass with
+                                | Some baseClass -> [baseClass]
+                                | None -> []
+                            Seq.append x [mappingClass], Seq.append y baseMappingClasses, i+1) (Seq.empty, Seq.empty, 0)
+
+        let fromClassDefinitionToClassFile (classDef:ClassDefinition) =
+            { Name = classDef.Name; Classes = [classDef] }
+
+        let classFilesWithOneClassEach = 
+            [
+                createGlobalMapperInterfaceDefinition mappingSpecifications
+                createGlobalMapperClassDefinition mappingSpecifications
+            ]
+            |> Seq.append mappingClasses
+            |> Seq.map fromClassDefinitionToClassFile
+        
+        let classFilesWithTenClassesEach = 
+            baseMappingClasses
+            |> Seq.chunkBySize 10
+            |> Seq.map (fun chunk -> 
+                            chunk 
+                            |> Seq.map fromClassDefinitionToClassFile)
+            |> Seq.collect id
+
+        let classFileWithTheIndividualMapperInterfaceDef =
+            let classDef = Conventions.Operations.individualMapperInterfaceDefinitionWithGenericTypes
+            { Name = "IndividualMapper"; Classes = [classDef] }
+
+        classFilesWithOneClassEach
+        |> Seq.append classFilesWithTenClassesEach
+        |> Seq.append [classFileWithTheIndividualMapperInterfaceDef] 

@@ -61,3 +61,7 @@ module Records =
     and MethodParameter =
         { ParameterType: ClassDefinition
           Name: string }
+
+    type ClassFile =
+        { Name: string
+          Classes: ClassDefinition seq }
