@@ -1,4 +1,4 @@
-module Tests
+module MappingTests
 
 open System
 open Xunit
