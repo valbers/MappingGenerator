@@ -3,11 +3,8 @@ module Tests
 open System
 open Xunit
 
-open Conventions.Records
-open Conventions.Operations
-open CodeGeneration.Records
-open CodeGeneration.Operations
-
+open Mapping.Records
+open Mapping.Operations
 
 type MutableA =
     { mutable Foo: string
