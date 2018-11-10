@@ -5,30 +5,6 @@ open Mapping.Records
 
 module Operations =
 
-    let createMappingClass (name: string) (mapping: Mapping) : ClassDefinition =
-        let baseClass =
-            { AccessModifier = AccessModifier.Public
-              OtherModifiers = [Modifier.Abstract; Modifier.Partial]
-              IsInterface = false
-              Namespace = None
-              Name = (sprintf "%sBase" name)
-              InstanceVariables = Seq.empty<InstanceVariable>
-              Methods = Seq.empty<MethodDefinition>
-              GenericArguments = Seq.empty<ClassDefinition>
-              BaseClass = None
-              IsConcreteType = false }
-
-        { AccessModifier = AccessModifier.Public
-          OtherModifiers = [ Modifier.Partial ]
-          IsInterface = false
-          Namespace = None
-          Name = name
-          InstanceVariables = Seq.empty<InstanceVariable>
-          Methods = Seq.empty<MethodDefinition>
-          GenericArguments = Seq.empty<ClassDefinition>
-          BaseClass = Some baseClass
-          IsConcreteType = false }
-
     let instructToSetAVariable variableName value = { Code = sprintf "%s = %s;" variableName value }
 
     let withInjectedDependency (dependency: ClassDefinition) (dependencyName: string) (targetClass: ClassDefinition) =
@@ -95,6 +71,82 @@ module Operations =
         { globalMapperInterface with
             IsInterface = false
             Name = globalMapperInterface.Name.TrimStart('I') }
+    
+    let rec typeToClassDefinition (theType: System.Type): ClassDefinition =
+        { IsConcreteType = true
+          IsInterface = theType.IsInterface
+          Namespace = Some theType.Namespace
+          Name = match theType.IsGenericType with
+                 | true -> theType.Name
+                 | false -> theType.Name.Split('`') |> Seq.item 0
+          GenericArguments = match theType.IsGenericType with
+                             | true -> theType.GetGenericArguments() |> (Seq.map typeToClassDefinition)
+                             | false -> Seq.empty
+          AccessModifier = AccessModifier.Public
+          OtherModifiers = Seq.empty
+          BaseClass = None
+          InstanceVariables = Seq.empty
+          Methods = Seq.empty }
+
+    let rec private getFullyQualifiedNameIncludingGenerics (classDef: ClassDefinition) =
+        let withoutGenericPartYet =
+            match classDef.Namespace with
+            | Some x -> sprintf "%s.%s" x classDef.Name
+            | None -> classDef.Name
+        match classDef.GenericArguments with
+        | genericArgs when not (genericArgs = Seq.empty) ->
+                      sprintf "%s<%s>" withoutGenericPartYet (System.String.Join(", ", genericArgs |> Seq.map getFullyQualifiedNameIncludingGenerics))
+        | _ -> withoutGenericPartYet
+
+    let createMappingClass (name: string) (mapping: Mapping) : ClassDefinition =
+        let baseClass =
+            { AccessModifier = AccessModifier.Public
+              OtherModifiers = [Modifier.Abstract; Modifier.Partial]
+              IsInterface = false
+              Namespace = None
+              Name = (sprintf "%sBase" name)
+              InstanceVariables = Seq.empty<InstanceVariable>
+              Methods = Seq.empty<MethodDefinition>
+              GenericArguments = Seq.empty<ClassDefinition>
+              BaseClass = None
+              IsConcreteType = false }
+
+        let methodForCreateDestination: MethodDefinition =
+            let destinationAsClassDef = mapping.Destination |> typeToClassDefinition
+            let code =
+                sprintf "return new %s();" (getFullyQualifiedNameIncludingGenerics destinationAsClassDef)
+            { AccessModifier = AccessModifier.Protected
+              OtherModifiers = [Modifier.Virtual]
+              ReturnType = Some destinationAsClassDef
+              Signature =
+                { Name = "CreateDestination"
+                  Parameters = [{Name= "source"; ParameterType = mapping.Source |> typeToClassDefinition}]
+                  GenericArguments = Seq.empty}
+              Body = [{ Code = code }] }
+
+        let mapperFetcher =
+            { AccessModifier = AccessModifier.Public
+              OtherModifiers = Seq.empty
+              IsInterface = false
+              Namespace = Some "System"
+              Name = "Func"
+              InstanceVariables = Seq.empty<InstanceVariable>
+              Methods = Seq.empty<MethodDefinition>
+              GenericArguments = [Conventions.Operations.globalMapperInterfaceDefinition]
+              BaseClass = None
+              IsConcreteType = true }
+
+        { AccessModifier = AccessModifier.Public
+          OtherModifiers = [Modifier.Partial]
+          IsInterface = false
+          Namespace = None
+          Name = name
+          InstanceVariables = Seq.empty<InstanceVariable>
+          Methods = [methodForCreateDestination] // TODO: add mainMappingMethod to list
+          GenericArguments = Seq.empty<ClassDefinition>
+          BaseClass = Some baseClass
+          IsConcreteType = false }
+        |> withInjectedDependency mapperFetcher (mapperFetcher |> Conventions.Operations.constructorParameterName)
 
     let buildClassFiles (mappingSpecifications: MappingSpecification seq): ClassFile seq =
         let mappingClasses, baseMappingClasses, _ =

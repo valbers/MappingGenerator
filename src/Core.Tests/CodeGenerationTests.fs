@@ -16,7 +16,7 @@ type MutableB =
       mutable Bar: int }
 
 [<Fact>]
-let ``"buildClassFiles" builds a file for a mapping specification`` () =
+let ``"buildClassFiles" builds a class file given a mapping specification`` () =
     let specifications: Mapping.Records.MappingSpecification list =
       [{ Source = typeof<MutableA>
          Destination = typeof<MutableB> }]
@@ -36,3 +36,5 @@ let ``"buildClassFiles" builds a file for a mapping specification`` () =
     class0.IsConcreteType |> should not' (be True)
     class0.IsInterface |> should not' (be True)
     class0.Namespace |> should be null
+    class0.OtherModifiers |> should contain Modifier.Partial
+    //class0.Methods |> Array.ofSeq |> should haveLength 4

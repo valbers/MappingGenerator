@@ -3,6 +3,12 @@ namespace Conventions
 open CodeGeneration.Records
 
 module Operations =
+
+    let constructorParameterName (dependency: ClassDefinition) =
+        match dependency.IsInterface with
+        | true -> dependency.Name.ToLowerInvariant().TrimStart('i')
+        | false -> dependency.Name.ToLowerInvariant()
+
     let mainMappingMethodSourceParameterName = "sourceSelector"
 
     let fieldName (originalName:string) = sprintf "_%s" (originalName.TrimStart('_'))
