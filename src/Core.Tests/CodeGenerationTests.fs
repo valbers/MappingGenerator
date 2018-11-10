@@ -1,10 +1,11 @@
 module CodeGenerationTests
 
 open Xunit
-open CodeGeneration.Records
-open CodeGeneration.Operations
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
+
+open CodeGenerationRecords
+open CodeGenerationOperations
 
 type MutableA =
     { mutable Foo: string
@@ -17,7 +18,7 @@ type MutableB =
 
 [<Fact>]
 let ``"buildClassFiles" builds a class file given a mapping specification`` () =
-    let specifications: Mapping.Records.MappingSpecification list =
+    let specifications: MappingRecords.MappingSpecification list =
       [{ Source = typeof<MutableA>
          Destination = typeof<MutableB> }]
     let classFiles =

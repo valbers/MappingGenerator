@@ -1,7 +1,4 @@
-﻿namespace Mapping
-
-module Records =
-
+﻿module MappingRecords
     type MappingRuleParticipant = 
         { Type: System.Type
           Name: string }

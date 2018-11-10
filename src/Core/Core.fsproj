@@ -5,11 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Records\CodeGeneration\Records.fs" />
-    <Compile Include="Records\Mapping\Records.fs" />
-    <Compile Include="Operations\Conventions\Operations.fs" />
-    <Compile Include="Operations\Mapping\Operations.fs" />
-    <Compile Include="Operations\CodeGeneration\Operations.fs" />
+    <Compile Include="Records\CodeGenerationRecords.fs" />
+    <Compile Include="Records\MappingRecords.fs" />
+    <Compile Include="Operations\MappingOperations.fs" />
+    <Compile Include="Operations\Conventions.fs" />
+    <Compile Include="Operations\CodeGenerationOperations.fs" />
   </ItemGroup>
 
 </Project>

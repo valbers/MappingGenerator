@@ -3,8 +3,8 @@ module MappingTests
 open System
 open Xunit
 
-open Mapping.Records
-open Mapping.Operations
+open MappingRecords
+open MappingOperations
 
 type MutableA =
     { mutable Foo: string

@@ -1,7 +1,4 @@
-namespace CodeGeneration
-
-module Records =
-
+module CodeGenerationRecords
     type Instruction =
         { Code: string }
 
