@@ -7,6 +7,7 @@ let constructorParameterName (dependency: ClassDefinition) =
     | true -> dependency.Name.ToLowerInvariant().TrimStart('i')
     | false -> dependency.Name.ToLowerInvariant()
 
+let mainMappingMethodName = "Map"
 let mainMappingMethodSourceParameterName = "sourceSelector"
 
 let fieldName (originalName:string) = sprintf "_%s" (originalName.TrimStart('_'))
@@ -34,7 +35,7 @@ let individualMapperInterfaceDefinition (tSource: ClassDefinition) (tDestination
       InstanceVariables = Seq.empty
       IsConcreteType = false
       Methods = 
-      [ { ReturnType = Some tDestination
+      [ { ReturnType = Some (NonVoid tDestination)
           AccessModifier = AccessModifier.Public
           OtherModifiers = Seq.empty
           Body = Seq.empty

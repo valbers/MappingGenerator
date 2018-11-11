@@ -17,6 +17,35 @@ type MutableB =
       mutable Bar: int }
 
 [<Fact>]
+let ``"withInjectedDependency adds dependency`` () =
+    let targetClass =
+        { IsInterface = false
+          Namespace = None
+          AccessModifier = AccessModifier.Public
+          OtherModifiers = Seq.empty
+          Name = "TheTargetClass"
+          BaseClass = None
+          InstanceVariables = Seq.empty
+          Methods = Seq.empty
+          GenericArguments = Seq.empty
+          IsConcreteType = false }
+    let dependency =
+        { IsInterface = false
+          Namespace = None
+          AccessModifier = AccessModifier.Public
+          OtherModifiers = Seq.empty
+          Name = "FancyDep"
+          BaseClass = None
+          InstanceVariables = Seq.empty
+          Methods = Seq.empty
+          GenericArguments = Seq.empty
+          IsConcreteType = false }
+
+    let newTargetClass = targetClass |> withInjectedDependency dependency "fancyDep"
+    let methods = newTargetClass.Methods |> Array.ofSeq
+    methods |> should haveLength 1
+
+[<Fact>]
 let ``"buildClassFiles" builds a class file given a mapping specification`` () =
     let specifications: MappingRecords.MappingSpecification list =
       [{ Source = typeof<MutableA>
@@ -38,4 +67,10 @@ let ``"buildClassFiles" builds a class file given a mapping specification`` () =
     class0.IsInterface |> should not' (be True)
     class0.Namespace |> should be null
     class0.OtherModifiers |> should contain Modifier.Partial
-    //class0.Methods |> Array.ofSeq |> should haveLength 4
+    let methods = class0.Methods |> Array.ofSeq
+    methods |> should haveLength 5
+    (methods |> Seq.head).Signature.Name |> should equal "Mapper0"
+    methods |> should containf (fun x -> x.Signature.Name = "CreateDestination")
+    methods |> should containf (fun x -> x.Signature.Name = "Map")
+    methods |> should containf (fun x -> x.Signature.Name = "MapFoo")
+    methods |> should containf (fun x -> x.Signature.Name = "MapBar")

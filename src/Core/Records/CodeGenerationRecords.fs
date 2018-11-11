@@ -1,4 +1,7 @@
 module CodeGenerationRecords
+
+open System
+
     type Instruction =
         { Code: string }
 
@@ -49,7 +52,7 @@ module CodeGenerationRecords
         { AccessModifier: AccessModifier
           OtherModifiers: Modifier seq
           Signature: MethodSignature
-          ReturnType: ClassDefinition option
+          ReturnType: MethodReturnType option
           Body: Instruction seq}
     and MethodSignature = 
         { Name: string
@@ -58,6 +61,9 @@ module CodeGenerationRecords
     and MethodParameter =
         { ParameterType: ClassDefinition
           Name: string }
+    and MethodReturnType =
+        | Void
+        | NonVoid of ClassDefinition
 
     type ClassFile =
         { Name: string

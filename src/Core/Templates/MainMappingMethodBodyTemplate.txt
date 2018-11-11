@@ -1,0 +1,9 @@
+﻿var source = <#=mainMappingMethodSourceParameterName#>(default(<#=sourceTypeName#>));
+if (source == default(<#=sourceTypeName#>))
+{
+    return default(<#=destTypeName#>);
+}
+<#=destTypeName#> destination;
+destination = CreateDestination(source);
+<#=propertyMappingInstructions#>
+return destination;

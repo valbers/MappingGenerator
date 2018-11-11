@@ -5,11 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="Script1.fsx" />
+    <Content Include="Templates\MainMappingMethodBodyTemplate.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Records\CodeGenerationRecords.fs" />
     <Compile Include="Records\MappingRecords.fs" />
     <Compile Include="Operations\MappingOperations.fs" />
     <Compile Include="Operations\Conventions.fs" />
     <Compile Include="Operations\CodeGenerationOperations.fs" />
   </ItemGroup>
+
+  <ItemGroup />
 
 </Project>

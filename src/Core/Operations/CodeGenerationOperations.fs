@@ -5,40 +5,50 @@ open CodeGenerationRecords
 
 let instructToSetAVariable variableName value = { Code = sprintf "%s = %s;" variableName value }
 
-let withInjectedDependency (dependency: ClassDefinition) (dependencyName: string) (targetClass: ClassDefinition) =
-    let dependencyFieldName = Conventions.fieldName dependencyName
-    let instanceVariables =
-        targetClass.InstanceVariables
-        |> Seq.append (Seq.ofList [{ InstanceVariableType = InstanceVariableType.Field 
-                                     AccessModifier = AccessModifier.Private
-                                     OtherModifiers = Seq.empty
-                                     Type = dependency
-                                     Name = dependencyFieldName }])
-
-    let addSetDependencyInstruction originalBody =
-        originalBody
-        |> Seq.append (Seq.ofList [instructToSetAVariable dependencyFieldName dependencyName])
-
-    let methods =
-        targetClass.Methods
-        |> Seq.map (fun x -> match x.ReturnType with
-                                | None -> x
-                                | Some _ -> { x with Body = addSetDependencyInstruction x.Body })
-
-    { targetClass with
-        InstanceVariables = instanceVariables
-        Methods = methods }
-
-let newConstructorWithDependency (dependency: ClassDefinition*string) (targetClass: ClassDefinition): MethodDefinition =
-    let dependencyType, dependencyName = dependency
+let private newConstructorWithDependency (dependency: ClassDefinition) (dependencyName: string) (targetClass: ClassDefinition): MethodDefinition =
     { ReturnType = None
       AccessModifier = AccessModifier.Public
       OtherModifiers = Seq.empty
       Signature = { Name = targetClass.Name
                     GenericArguments = Seq.empty
-                    Parameters = Seq.ofList [{Name = dependencyName; ParameterType = dependencyType}] }
+                    Parameters = Seq.ofList [{Name = dependencyName; ParameterType = dependency}] }
       Body = Seq.ofList [ instructToSetAVariable (Conventions.fieldName dependencyName) dependencyName ]
     }
+
+let withInjectedDependency (dependency: ClassDefinition) (dependencyName: string) (targetClass: ClassDefinition) =
+    let dependencyFieldName = Conventions.fieldName dependencyName
+    let instanceVariables =
+        targetClass.InstanceVariables
+        |> Seq.append (Seq.ofList [{ InstanceVariableType = InstanceVariableType.Field
+                                     AccessModifier = AccessModifier.Private
+                                     OtherModifiers = Seq.empty
+                                     Type = dependency
+                                     Name = dependencyFieldName }])
+
+    let withAInstructionToSetTheDependency originalBody =
+        originalBody
+        |> Seq.append [instructToSetAVariable dependencyFieldName dependencyName]
+
+    let dependencyParameter = {Name = dependencyName; ParameterType = dependency};
+    let methods =
+        targetClass.Methods
+        |> Seq.map (fun x -> match x.ReturnType with
+                                | Some _ -> x
+                                | None -> { x with
+                                                Body = x.Body |> withAInstructionToSetTheDependency
+                                                Signature = 
+                                                    { x.Signature with
+                                                        Parameters =
+                                                            [dependencyParameter]
+                                                            |> Seq.append x.Signature.Parameters }})
+
+    let finalMethods =
+        if methods |> Seq.exists (fun x -> x.ReturnType = None) then methods
+        else methods |> Seq.append [newConstructorWithDependency dependency dependencyName targetClass]
+
+    { targetClass with
+        InstanceVariables = instanceVariables
+        Methods = finalMethods }
 
 let convertTypeToClassDef (theType: System.Type): ClassDefinition =
    { Name = "IMapper"
@@ -108,21 +118,21 @@ let createMappingClass (name: string) (mapping: Mapping) : ClassDefinition =
           GenericArguments = Seq.empty<ClassDefinition>
           BaseClass = None
           IsConcreteType = false }
-
+    
+    let destinationAsClassDef = mapping.Destination |> typeToClassDefinition
+    let sourceAsClassDef = mapping.Source |> typeToClassDefinition
     let methodForCreateDestination: MethodDefinition =
-        let destinationAsClassDef = mapping.Destination |> typeToClassDefinition
-        let code =
-            sprintf "return new %s();" (getFullyQualifiedNameIncludingGenerics destinationAsClassDef)
         { AccessModifier = AccessModifier.Protected
           OtherModifiers = [Modifier.Virtual]
-          ReturnType = Some destinationAsClassDef
+          ReturnType = Some (NonVoid destinationAsClassDef)
           Signature =
             { Name = "CreateDestination"
-              Parameters = [{Name= "source"; ParameterType = mapping.Source |> typeToClassDefinition}]
+              Parameters = [{Name= "source"; ParameterType = sourceAsClassDef}]
               GenericArguments = Seq.empty}
-          Body = [{ Code = code }] }
+          Body = [ { Code = sprintf "return new %s();" (getFullyQualifiedNameIncludingGenerics destinationAsClassDef) } ]
+        }
 
-    let mapperFetcher =
+    let systemFuncDef (genericArguments: ClassDefinition seq): ClassDefinition =
         { AccessModifier = AccessModifier.Public
           OtherModifiers = Seq.empty
           IsInterface = false
@@ -130,20 +140,78 @@ let createMappingClass (name: string) (mapping: Mapping) : ClassDefinition =
           Name = "Func"
           InstanceVariables = Seq.empty<InstanceVariable>
           Methods = Seq.empty<MethodDefinition>
-          GenericArguments = [Conventions.globalMapperInterfaceDefinition]
+          GenericArguments = genericArguments
           BaseClass = None
           IsConcreteType = true }
 
-    { AccessModifier = AccessModifier.Public
+    let (|BothOfSameType|_|) (sourceType: System.Type, destinationType: System.Type) =
+        match sourceType, destinationType with
+        | (srcType, destType) when srcType = destType -> Some (srcType, destType)
+        | _ -> None
+    
+    let propertyMappingMethod (mappingRule: MappingRule): MethodDefinition =
+        { AccessModifier = AccessModifier.Public
+          OtherModifiers = [Modifier.Virtual]
+          ReturnType = Some (typeToClassDefinition mappingRule.Destination.Type |> NonVoid)
+          Signature =
+            { Name = sprintf "Map%s" mappingRule.Destination.Name
+              Parameters = [ {Name = "source"; ParameterType = typeToClassDefinition mapping.Source} ]
+              GenericArguments = Seq.empty
+            }
+          Body = match mappingRule.Source.Type, mappingRule.Destination.Type with
+                 | BothOfSameType (_, _) -> [{Code = sprintf "return source.%s;" mappingRule.Source.Name}]
+                 | _ -> [{Code = sprintf "return default(%s);" (getFullyQualifiedNameIncludingGenerics sourceAsClassDef)}]
+        }
+
+    let mainMappingMethodBody =
+        let model =
+            ["mainMappingMethodSourceParameterName", "sourceSelector"
+             "sourceTypeName", getFullyQualifiedNameIncludingGenerics sourceAsClassDef
+             "destTypeName", getFullyQualifiedNameIncludingGenerics destinationAsClassDef
+             "propertyMappingInstructions",
+                mapping.PropertiesMappingRules 
+                |> Seq.map (fun r -> {Code = (sprintf "destination.%s = %s(source)" r.Destination.Name (r |> propertyMappingMethod).Signature.Name)})
+                |> Seq.fold (fun state curr -> sprintf "%s%s%s" state System.Environment.NewLine curr.Code) ""
+            ] |> dict
+        let regex = System.Text.RegularExpressions.Regex @"(\<#=([^#]+)#\>)"
+        System.IO.File.ReadAllLines "Templates/MainMappingMethodBodyTemplate.txt"
+        |> Array.map (fun line ->
+                          let modifiedLine = regex.Replace(line, fun (m: System.Text.RegularExpressions.Match) ->
+                                                   let key = m.Groups.[2].Captures.[0].Value
+                                                   if not (model.ContainsKey key) then
+                                                    failwith (sprintf "Key %s not found (used in template MainMappingMethodBodyTemplate.txt))" key)
+                                                   sprintf "%s" model.[key])
+                          { Code = modifiedLine })
+
+    let mainMappingMethod: MethodDefinition =
+        {
+          AccessModifier = AccessModifier.Public
+          OtherModifiers = [Modifier.Virtual]
+          ReturnType = Some (NonVoid destinationAsClassDef)
+          Signature = 
+              {
+                Name = Conventions.mainMappingMethodName
+                GenericArguments = Seq.empty
+                Parameters =
+                  [
+                    { Name = Conventions.mainMappingMethodSourceParameterName
+                      ParameterType = (systemFuncDef [destinationAsClassDef; sourceAsClassDef]) }
+                  ]
+              }
+          Body = mainMappingMethodBody
+        }
+
+    let mapperFetcher = systemFuncDef [Conventions.globalMapperInterfaceDefinition]
+    { IsConcreteType = false
+      AccessModifier = AccessModifier.Public
       OtherModifiers = [Modifier.Partial]
       IsInterface = false
       Namespace = None
       Name = name
-      InstanceVariables = Seq.empty<InstanceVariable>
-      Methods = [methodForCreateDestination] // TODO: add mainMappingMethod to list
-      GenericArguments = Seq.empty<ClassDefinition>
       BaseClass = Some baseClass
-      IsConcreteType = false }
+      Methods = (mapping.PropertiesMappingRules |> Seq.map propertyMappingMethod) |> Seq.append [mainMappingMethod; methodForCreateDestination]
+      InstanceVariables = Seq.empty<InstanceVariable>
+      GenericArguments = Seq.empty<ClassDefinition> }
     |> withInjectedDependency mapperFetcher (mapperFetcher |> Conventions.constructorParameterName)
 
 let buildClassFiles (mappingSpecifications: MappingSpecification seq): ClassFile seq =
