@@ -3,7 +3,7 @@ module CodeGenerationOperations
 open MappingRecords
 open CodeGenerationRecords
 
-let instructToSetAVariable variableName value = { Code = sprintf "%s = %s;" variableName value }
+let private instructToSetAVariable variableName value = { Code = sprintf "%s = %s;" variableName value }
 
 let private newConstructorWithDependency (dependency: ClassDefinition) (dependencyName: string) (targetClass: ClassDefinition): MethodDefinition =
     { ReturnType = None
@@ -50,7 +50,7 @@ let withInjectedDependency (dependency: ClassDefinition) (dependencyName: string
         InstanceVariables = instanceVariables
         Methods = finalMethods }
 
-let convertTypeToClassDef (theType: System.Type): ClassDefinition =
+let private convertTypeToClassDef (theType: System.Type): ClassDefinition =
    { Name = "IMapper"
      Namespace = Some "AutoGeneration"
      IsInterface = true
@@ -62,7 +62,7 @@ let convertTypeToClassDef (theType: System.Type): ClassDefinition =
      IsConcreteType = false
      Methods = Seq.empty }
 
-let createGlobalMapperInterfaceDefinition (mappingSpecifications: MappingSpecification seq) =
+let private createGlobalMapperInterfaceDefinition (mappingSpecifications: MappingSpecification seq) =
     let globalMapperInterface = Conventions.globalMapperInterfaceDefinition
     let res, _ =
         mappingSpecifications
@@ -74,13 +74,13 @@ let createGlobalMapperInterfaceDefinition (mappingSpecifications: MappingSpecifi
                         (withInjectedDependency individualMapperInterfaceDef dependencyName curr), index + 1) (globalMapperInterface, 0)
     res 
 
-let createGlobalMapperClassDefinition (mappingSpecifications: MappingSpecification seq) =
+let private createGlobalMapperClassDefinition (mappingSpecifications: MappingSpecification seq) =
     let globalMapperInterface = createGlobalMapperInterfaceDefinition mappingSpecifications
     { globalMapperInterface with
         IsInterface = false
         Name = globalMapperInterface.Name.TrimStart('I') }
 
-let rec typeToClassDefinition (theType: System.Type): ClassDefinition =
+let rec private typeToClassDefinition (theType: System.Type): ClassDefinition =
     { IsConcreteType = true
       IsInterface = theType.IsInterface
       Namespace = Some theType.Namespace
