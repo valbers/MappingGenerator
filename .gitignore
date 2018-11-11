@@ -4,4 +4,5 @@ src/packages
 *.suo
 *.dll
 *.pdb
+src/Core/Script1.fsx
 
