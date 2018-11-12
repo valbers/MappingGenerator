@@ -109,7 +109,7 @@ let rec private getFullyQualifiedNameIncludingGenerics (classDef: ClassDefinitio
                   sprintf "%s<%s>" withoutGenericPartYet (System.String.Join(", ", genericArgs |> Seq.map getFullyQualifiedNameIncludingGenerics))
     | _ -> withoutGenericPartYet
 
-let createMappingClass (name: string) (mapping: Mapping) : ClassDefinition =
+let createMappingClass (name: string) (theyHaveAMappingSpecification: System.Type*System.Type -> bool) (mapping: Mapping) : ClassDefinition =
     let baseClass =
         { AccessModifier = AccessModifier.Public
           OtherModifiers = [Modifier.Abstract; Modifier.Partial]
@@ -151,18 +151,31 @@ let createMappingClass (name: string) (mapping: Mapping) : ClassDefinition =
         match sourceType, destinationType with
         | (srcType, destType) when srcType = destType -> Some (srcType, destType)
         | _ -> None
+
+    let (|TheyHaveAMappingSpecification|_|) (sourceType: System.Type, destinationType: System.Type) =
+        match sourceType, destinationType with
+        | (srcType, destType) when (theyHaveAMappingSpecification (srcType, destType)) -> Some (srcType, destType)
+        | _ -> None
     
     let propertyMappingMethod (mappingRule: MappingRule): MethodDefinition =
         { AccessModifier = AccessModifier.Public
           OtherModifiers = [Modifier.Virtual]
           ReturnType = Some (typeToClassDefinition mappingRule.Destination.Type |> NonVoid)
           Signature =
-            { Name = sprintf "Map%s" mappingRule.Destination.Name
+            { Name = sprintf "Map%s" mappingRule.Source.Name
               Parameters = [ {Name = "source"; ParameterType = typeToClassDefinition mapping.Source} ]
               GenericArguments = Seq.empty
             }
           Body = match mappingRule.Source.Type, mappingRule.Destination.Type with
                  | BothOfSameType (_, _) -> [{Code = sprintf "return source.%s;" mappingRule.Source.Name}]
+                 | TheyHaveAMappingSpecification (_, d) ->
+                    [{
+                        Code = 
+                            sprintf "return %s().Map((%s x) => source.%s);"
+                                (Conventions.fieldName "mapperFetcher")
+                                (d |> typeToClassDefinition |> getFullyQualifiedNameIncludingGenerics)
+                                mappingRule.Source.Name
+                    }]
                  | _ -> [{Code = sprintf "return default(%s);" (getFullyQualifiedNameIncludingGenerics sourceAsClassDef)}]
         }
 
@@ -218,13 +231,16 @@ let createMappingClass (name: string) (mapping: Mapping) : ClassDefinition =
     |> withInjectedDependency mapperFetcher "mapperFetcher"
 
 let buildClassFiles (mappingSpecifications: MappingSpecification seq): ClassFile seq =
+    let doTheyHaveAMappingSpecification (x, y) =
+        mappingSpecifications |> Seq.exists (fun z -> z.Source = x && z.Destination = y)
+
     let mappingClasses, baseMappingClasses, _ =
         mappingSpecifications
         |> Seq.fold (fun state item ->
                         let x, y, i = state
                         let mappingClass =
                             MappingOperations.createMapping item.Source item.Destination
-                            |> createMappingClass (sprintf "Mapper%d" i)
+                            |> createMappingClass (sprintf "Mapper%d" i) doTheyHaveAMappingSpecification
                         let baseMappingClasses =
                             match mappingClass.BaseClass with
                             | Some baseClass -> [baseClass]

@@ -16,6 +16,12 @@ type MutableB =
     { mutable Foo: string
       mutable Bar: int }
 
+type MutableC =
+    { mutable X: MutableA }
+
+type MutableD =
+    { mutable X: MutableB }
+
 [<Fact>]
 let ``"withInjectedDependency adds dependency`` () =
     //Arrange
@@ -188,4 +194,38 @@ let ``"buildClassFiles" -> main mapper has a method for mapping property \"Foo\"
 
     methodDefinition2.Body |> should haveLength 1
     methodDefinition2.Body |> should contain {Code = "return source.Bar;"}
+
+[<Fact>]
+let ``"buildClassFiles" -> main mapper has a method for mapping complex property`` () =
+    //Arrange
+    let specifications: MappingRecords.MappingSpecification list =
+      [{ Source = typeof<MutableA>
+         Destination = typeof<MutableB>}
+       { Source = typeof<MutableC>
+         Destination = typeof<MutableD> }]
+    
+    //Act
+    let classFiles = specifications |> buildClassFiles
+    
+    //Assert
+    classFiles |> should containf (fun x -> x.Classes |> Seq.exists (fun y -> y.Methods |> Seq.exists (fun z -> z.Signature.Name = "MapX")))
+    let classFile0 = classFiles |> Seq.find (fun x -> x.Classes |> Seq.exists (fun y -> y.Methods |> Seq.exists (fun z -> z.Signature.Name = "MapX")))
+    let class0 = classFile0.Classes |> Seq.head
+    let methods = class0.Methods |> Array.ofSeq
+    methods |> should containf (fun x -> x.Signature.Name = "MapX")
+    let methodDefinition = methods |> Array.find (fun x -> x.Signature.Name = "MapX")
+    methodDefinition.ReturnType |> should not' (be null)
+    match methodDefinition.ReturnType with
+        | Some x ->
+            match x with
+            | NonVoid y -> y.Name |> should equal "MutableB"
+            | Void -> failwith "Expected that CreateDestination wasn't void, but it was."
+        | None -> failwith "Expected that CreateDestination had a return type indication (including \"void\")"
+    |> ignore
+
+    methodDefinition.Signature.Parameters
+    |> should containf (fun (x: MethodParameter) -> x.Name = "source" && x.ParameterType.Name = "MutableC")
+
+    methodDefinition.Body |> should haveLength 1
+    methodDefinition.Body |> should contain {Code = "return _mapperFetcher().Map((MutableB x) => source.X);"}
 
