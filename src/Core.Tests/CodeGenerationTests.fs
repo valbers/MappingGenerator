@@ -17,10 +17,12 @@ type MutableB =
       mutable Bar: int }
 
 type MutableC =
-    { mutable X: MutableA }
+    { mutable X: MutableA
+      mutable M: MutableA }
 
 type MutableD =
-    { mutable X: MutableB }
+    { mutable X: MutableB
+      mutable N: MutableB }
 
 [<Fact>]
 let ``"withInjectedDependency adds dependency`` () =
@@ -209,9 +211,9 @@ let ``"buildClassFiles" -> main mapper has a method for mapping complex property
     
     //Assert
     classFiles |> should containf (fun x -> x.Classes |> Seq.exists (fun y -> y.Methods |> Seq.exists (fun z -> z.Signature.Name = "MapX")))
-    let classFile0 = classFiles |> Seq.find (fun x -> x.Classes |> Seq.exists (fun y -> y.Methods |> Seq.exists (fun z -> z.Signature.Name = "MapX")))
-    let class0 = classFile0.Classes |> Seq.head
-    let methods = class0.Methods |> Array.ofSeq
+    let classFile = classFiles |> Seq.find (fun x -> x.Classes |> Seq.exists (fun y -> y.Methods |> Seq.exists (fun z -> z.Signature.Name = "MapX")))
+    let ``class`` = classFile.Classes |> Seq.head
+    let methods = ``class``.Methods |> Array.ofSeq
     methods |> should containf (fun x -> x.Signature.Name = "MapX")
     let methodDefinition = methods |> Array.find (fun x -> x.Signature.Name = "MapX")
     methodDefinition.ReturnType |> should not' (be null)
@@ -228,4 +230,27 @@ let ``"buildClassFiles" -> main mapper has a method for mapping complex property
 
     methodDefinition.Body |> should haveLength 1
     methodDefinition.Body |> should contain {Code = "return _mapperFetcher().Map((MutableB x) => source.X);"}
+
+[<Fact>]
+let ``"buildClassFiles" -> method for mapping complex property`` () =
+    //Arrange
+    let specifications: MappingRecords.MappingSpecification list =
+      [{ Source = typeof<MutableA>
+         Destination = typeof<MutableB>}
+       { Source = typeof<MutableC>
+         Destination = typeof<MutableD> }]
+    
+    //Act
+    let classFiles = specifications |> buildClassFiles
+    
+    //Assert
+    classFiles |> should containf (fun x -> x.Name = "Mapper1")
+    let classFile1 = classFiles |> Seq.find (fun x -> x.Name = "Mapper1")
+    let class1 = classFile1.Classes |> Seq.head
+    let methods = class1.Methods |> Array.ofSeq
+    methods |> should haveLength 4
+    (methods |> Seq.head).Signature.Name |> should equal "Mapper1"
+    methods |> should containf (fun x -> x.Signature.Name = "CreateDestination")
+    methods |> should containf (fun x -> x.Signature.Name = "Map")
+    methods |> should containf (fun x -> x.Signature.Name = "MapX")
 

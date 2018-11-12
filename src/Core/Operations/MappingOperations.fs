@@ -14,19 +14,19 @@ let private createMappingRules source dest =
 
     let findFirstPropertyMatching (toBeMatched: PropertyInfo) (sourceProps: PropertyInfo seq) =
         match (sourceProps |> Seq.tryFind (fun x -> String.Compare(x.Name, toBeMatched.Name, ignoreCase = true) = 0)) with
-        | Some value -> { Name = value.Name
-                          Type = value.PropertyType }
-        | None -> { Name = source.Name
-                    Type = source }
+        | Some value -> Some ({ Name = value.Name
+                                Type = value.PropertyType }, toBeMatched)
+        | None -> None
 
-    let mapTwoPropertyInfosToAMappingRule (source: MappingRuleParticipant, dest: PropertyInfo): MappingRule =
+    let mapTwoPropertyInfosToAMappingRule (source: MappingRuleParticipant , dest: PropertyInfo): MappingRule =
         { Source = source 
           Destination = 
             { Name = dest.Name
               Type = dest.PropertyType } }
 
     destProperties
-    |> Seq.map (fun x -> ((sourceProperties |> findFirstPropertyMatching x), x))
+    |> Seq.map (fun x -> (sourceProperties |> findFirstPropertyMatching x))
+    |> (Seq.filter (fun x -> match x with | Some _ -> true | None -> false) >> Seq.map (fun x -> x.Value))
     |> Seq.map mapTwoPropertyInfosToAMappingRule
 
 let createMapping source dest : Mapping =
