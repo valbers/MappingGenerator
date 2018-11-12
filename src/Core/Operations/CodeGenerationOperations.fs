@@ -83,7 +83,10 @@ let private createGlobalMapperClassDefinition (mappingSpecifications: MappingSpe
 let rec private typeToClassDefinition (theType: System.Type): ClassDefinition =
     { IsConcreteType = true
       IsInterface = theType.IsInterface
-      Namespace = Some theType.Namespace
+      Namespace =
+        match theType.Namespace with
+        | x when not (x = null || x = System.String.Empty)  -> Some x
+        | _ -> None
       Name = match theType.IsGenericType with
              | true -> theType.Name
              | false -> theType.Name.Split('`') |> Seq.item 0
