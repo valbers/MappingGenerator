@@ -5,4 +5,4 @@ src/packages
 *.dll
 *.pdb
 src/Core/Script1.fsx
-
+.vs/

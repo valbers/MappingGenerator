@@ -212,7 +212,7 @@ let createMappingClass (name: string) (mapping: Mapping) : ClassDefinition =
       Methods = (mapping.PropertiesMappingRules |> Seq.map propertyMappingMethod) |> Seq.append [mainMappingMethod; methodForCreateDestination]
       InstanceVariables = Seq.empty<InstanceVariable>
       GenericArguments = Seq.empty<ClassDefinition> }
-    |> withInjectedDependency mapperFetcher (mapperFetcher |> Conventions.constructorParameterName)
+    |> withInjectedDependency mapperFetcher "mapperFetcher"
 
 let buildClassFiles (mappingSpecifications: MappingSpecification seq): ClassFile seq =
     let mappingClasses, baseMappingClasses, _ =

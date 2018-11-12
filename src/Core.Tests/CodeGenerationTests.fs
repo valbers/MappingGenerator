@@ -74,3 +74,13 @@ let ``"buildClassFiles" builds a class file given a mapping specification`` () =
     methods |> should containf (fun x -> x.Signature.Name = "Map")
     methods |> should containf (fun x -> x.Signature.Name = "MapFoo")
     methods |> should containf (fun x -> x.Signature.Name = "MapBar")
+    let instanceVariables = class0.InstanceVariables |> Array.ofSeq
+    instanceVariables |> should haveLength 1
+    let instanceVariable = instanceVariables |> Array.head
+    instanceVariable.Name |> should equal "_mapperFetcher"
+    methods
+    |> Seq.filter (fun x ->
+                    x.ReturnType = None &&
+                    x.Signature.Name = class0.Name &&
+                    x.Signature.Parameters |> Seq.exists (fun y -> y.Name = "mapperFetcher"))
+    |> Seq.iter (fun x -> x.Body |> should containf (fun (y: Instruction) -> y.Code = "_mapperFetcher = mapperFetcher;"))
