@@ -6,6 +6,7 @@ open FsUnit.CustomMatchers
 
 open CodeGenerationRecords
 open CodeGenerationOperations
+open MappingRecords
 
 type MutableA =
     { mutable Foo: string
@@ -23,6 +24,138 @@ type MutableC =
 type MutableD =
     { mutable X: MutableB
       mutable N: MutableB }
+
+type MutableA1   = {mutable Foo: string; mutable Bar: int}
+type MutableA2   = {mutable Foo: string; mutable Bar: int}
+type MutableA3   = {mutable Foo: string; mutable Bar: int}
+type MutableA4   = {mutable Foo: string; mutable Bar: int}
+type MutableA5   = {mutable Foo: string; mutable Bar: int}
+type MutableA6   = {mutable Foo: string; mutable Bar: int}
+type MutableA7   = {mutable Foo: string; mutable Bar: int}
+type MutableA8   = {mutable Foo: string; mutable Bar: int}
+type MutableA9   = {mutable Foo: string; mutable Bar: int}
+type MutableA10  = {mutable Foo: string; mutable Bar: int}
+type MutableA11  = {mutable Foo: string; mutable Bar: int}
+type MutableA12  = {mutable Foo: string; mutable Bar: int}
+type MutableA13  = {mutable Foo: string; mutable Bar: int}
+type MutableA14  = {mutable Foo: string; mutable Bar: int}
+type MutableA15  = {mutable Foo: string; mutable Bar: int}
+type MutableA16  = {mutable Foo: string; mutable Bar: int}
+type MutableA17  = {mutable Foo: string; mutable Bar: int}
+type MutableA18  = {mutable Foo: string; mutable Bar: int}
+type MutableA19  = {mutable Foo: string; mutable Bar: int}
+type MutableA20  = {mutable Foo: string; mutable Bar: int}
+type MutableA21  = {mutable Foo: string; mutable Bar: int}
+
+type MutableB1   = {mutable Foo: string; mutable Bar: int}
+type MutableB2   = {mutable Foo: string; mutable Bar: int}
+type MutableB3   = {mutable Foo: string; mutable Bar: int}
+type MutableB4   = {mutable Foo: string; mutable Bar: int}
+type MutableB5   = {mutable Foo: string; mutable Bar: int}
+type MutableB6   = {mutable Foo: string; mutable Bar: int}
+type MutableB7   = {mutable Foo: string; mutable Bar: int}
+type MutableB8   = {mutable Foo: string; mutable Bar: int}
+type MutableB9   = {mutable Foo: string; mutable Bar: int}
+type MutableB10  = {mutable Foo: string; mutable Bar: int}
+type MutableB11  = {mutable Foo: string; mutable Bar: int}
+type MutableB12  = {mutable Foo: string; mutable Bar: int}
+type MutableB13  = {mutable Foo: string; mutable Bar: int}
+type MutableB14  = {mutable Foo: string; mutable Bar: int}
+type MutableB15  = {mutable Foo: string; mutable Bar: int}
+type MutableB16  = {mutable Foo: string; mutable Bar: int}
+type MutableB17  = {mutable Foo: string; mutable Bar: int}
+type MutableB18  = {mutable Foo: string; mutable Bar: int}
+type MutableB19  = {mutable Foo: string; mutable Bar: int}
+type MutableB20  = {mutable Foo: string; mutable Bar: int}
+type MutableB21  = {mutable Foo: string; mutable Bar: int}
+
+let bigMappingSpecifications: MappingSpecification list = 
+    [
+        {
+            Source = typeof<MutableA1>
+            Destination = typeof<MutableB1>
+        }
+        {
+            Source = typeof<MutableA2>
+            Destination = typeof<MutableB2>
+        }
+        {
+            Source = typeof<MutableA3>
+            Destination = typeof<MutableB3>
+        }
+        {
+            Source = typeof<MutableA4>
+            Destination = typeof<MutableB4>
+        }
+        {
+            Source = typeof<MutableA5>
+            Destination = typeof<MutableB5>
+        }
+        {
+            Source = typeof<MutableA6>
+            Destination = typeof<MutableB6>
+        }
+        {
+            Source = typeof<MutableA7>
+            Destination = typeof<MutableB7>
+        }
+        {
+            Source = typeof<MutableA8>
+            Destination = typeof<MutableB8>
+        }
+        {
+            Source = typeof<MutableA9>
+            Destination = typeof<MutableB9>
+        }
+        {
+            Source = typeof<MutableA10>
+            Destination = typeof<MutableB10>
+        }
+        {
+            Source = typeof<MutableA11>
+            Destination = typeof<MutableB11>
+        }
+        {
+            Source = typeof<MutableA12>
+            Destination = typeof<MutableB2>
+        }
+        {
+            Source = typeof<MutableA13>
+            Destination = typeof<MutableB13>
+        }
+        {
+            Source = typeof<MutableA14>
+            Destination = typeof<MutableB14>
+        }
+        {
+            Source = typeof<MutableA15>
+            Destination = typeof<MutableB15>
+        }
+        {
+            Source = typeof<MutableA16>
+            Destination = typeof<MutableB16>
+        }
+        {
+            Source = typeof<MutableA17>
+            Destination = typeof<MutableB17>
+        }
+        {
+            Source = typeof<MutableA18>
+            Destination = typeof<MutableB18>
+        }
+        {
+            Source = typeof<MutableA19>
+            Destination = typeof<MutableB19>
+        }
+        {
+            Source = typeof<MutableA20>
+            Destination = typeof<MutableB20>
+        }
+        {
+            Source = typeof<MutableA21>
+            Destination = typeof<MutableB21>
+        }
+    ]
 
 [<Fact>]
 let ``"withInjectedDependency adds dependency`` () =
@@ -67,8 +200,8 @@ let ``"buildClassFiles" builds a class file with correct name and main mapper in
     let classFiles = specifications |> buildClassFiles
     
     //Assert
-    classFiles |> should containf (fun x -> x.Name = "Mapper0")
-    let classFile0 = classFiles |> Seq.find (fun x -> x.Name = "Mapper0")
+    classFiles |> should containf (fun (x:ClassFile) -> x.Name = "Mapper0")
+    let classFile0 = classFiles |> Seq.find (fun (x:ClassFile) -> x.Name = "Mapper0")
     let classes = Array.ofSeq classFile0.Classes
     classes |> should haveLength 1
     let class0 = classes |> Array.head
@@ -88,8 +221,8 @@ let ``"buildClassFiles" builds a class file with certain methods`` () =
       specifications
       |> buildClassFiles
     
-    classFiles |> should containf (fun x -> x.Name = "Mapper0")
-    let classFile0 = classFiles |> Seq.find (fun x -> x.Name = "Mapper0")
+    classFiles |> should containf (fun (x:ClassFile) -> x.Name = "Mapper0")
+    let classFile0 = classFiles |> Seq.find (fun (x:ClassFile) -> x.Name = "Mapper0")
     let class0 = classFile0.Classes |> Seq.head
     let methods = class0.Methods |> Array.ofSeq
     methods |> should haveLength 5
@@ -244,8 +377,8 @@ let ``"buildClassFiles" -> method for mapping complex property`` () =
     let classFiles = specifications |> buildClassFiles
     
     //Assert
-    classFiles |> should containf (fun x -> x.Name = "Mapper1")
-    let classFile1 = classFiles |> Seq.find (fun x -> x.Name = "Mapper1")
+    classFiles |> should containf (fun (x:ClassFile) -> x.Name = "Mapper1")
+    let classFile1 = classFiles |> Seq.find (fun (x:ClassFile) -> x.Name = "Mapper1")
     let class1 = classFile1.Classes |> Seq.head
     let methods = class1.Methods |> Array.ofSeq
     methods |> should haveLength 4
@@ -254,3 +387,62 @@ let ``"buildClassFiles" -> method for mapping complex property`` () =
     methods |> should containf (fun x -> x.Signature.Name = "Map")
     methods |> should containf (fun x -> x.Signature.Name = "MapX")
 
+[<Fact>]
+let ``"buildClassFiles" -> a correct number of classes files are generated`` () =
+    //Arrange
+    let specifications = bigMappingSpecifications
+    bigMappingSpecifications |> should not' (be null)
+    //Act
+    let classFiles =
+        specifications
+        |> buildClassFiles
+        |> Array.ofSeq
+
+    //Assert
+    classFiles.Length |> should equal 27
+    let classFileNames = classFiles |> Seq.map (fun (x:ClassFile) -> x.Name) |> Array.ofSeq
+    [0..2] |> Seq.iter (fun i -> classFileNames |> should contain (sprintf "MapperBases%d" i))
+    [0..20] |> Seq.iter (fun i -> classFileNames |> should contain (sprintf "Mapper%d" i))
+    classFileNames |> should contain (sprintf "IMapper")
+    classFileNames |> should contain (sprintf "Mapper")
+
+[<Fact>]
+let ``"buildClassFiles" -> base mapping class files have at most ten classes each`` () =
+    //Arrange
+    let specifications = bigMappingSpecifications
+
+    //Act
+    let classFiles = specifications |> buildClassFiles |> Array.ofSeq
+
+    //Assert
+    let classFileNames = classFiles |> Array.ofSeq |> Seq.map (fun (x:ClassFile) -> x.Name)
+    [0..2] |> Seq.iter (fun i -> classFileNames |> should contain (sprintf "MapperBases%d" i))
+
+    let mapperBases =
+        classFiles
+        |> Seq.filter (fun (x:ClassFile) -> x.Name.StartsWith "MapperBases")
+    
+    mapperBases |> Array.ofSeq |> should haveLength 3
+    mapperBases
+        |> Seq.filter (fun (x:ClassFile) ->
+                            let classes = x.Classes |> Array.ofSeq
+                            classes.Length = 10)
+        |> Array.ofSeq |> should haveLength 2
+    mapperBases
+        |> Seq.filter (fun (x:ClassFile) ->
+                            let classes = x.Classes |> Array.ofSeq
+                            classes.Length = 1)
+        |> Array.ofSeq |> should haveLength 1
+    
+
+[<Fact>]
+let ``"buildClassFiles" -> each mapping has an own class file`` () =
+    //Arrange
+    let specifications = bigMappingSpecifications
+
+    //Act
+    let classFiles = specifications |> buildClassFiles
+
+    //Assert
+    let classFileNames = classFiles |> Seq.map (fun x -> x.Name) |> Array.ofSeq
+    [0..20] |> Seq.iter (fun i -> classFileNames |> should contain (sprintf "Mapper%d" i))

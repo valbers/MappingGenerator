@@ -247,8 +247,8 @@ let buildClassFiles (mappingSpecifications: MappingSpecification seq): ClassFile
                             | None -> []
                         Seq.append x [mappingClass], Seq.append y baseMappingClasses, i+1) (Seq.empty, Seq.empty, 0)
 
-    let fromClassDefinitionToClassFile (classDef:ClassDefinition) =
-        { Name = classDef.Name; Classes = [classDef] }
+    let fromClassDefinitionToClassFile (name: string) (classDefs:ClassDefinition seq) =
+        { Name = name; Classes = classDefs }
 
     let classFilesWithOneClassEach = 
         [
@@ -256,15 +256,17 @@ let buildClassFiles (mappingSpecifications: MappingSpecification seq): ClassFile
             createGlobalMapperClassDefinition mappingSpecifications
         ]
         |> Seq.append mappingClasses
-        |> Seq.map fromClassDefinitionToClassFile
+        |> Seq.map (fun x -> [x] |> fromClassDefinitionToClassFile x.Name)
     
-    let classFilesWithTenClassesEach = 
+    let classFilesWithTenClassesEach, _ = 
         baseMappingClasses
         |> Seq.chunkBySize 10
-        |> Seq.map (fun chunk -> 
-                        chunk 
-                        |> Seq.map fromClassDefinitionToClassFile)
-        |> Seq.collect id
+        |> Seq.fold (fun state chunk ->
+                               let finalSeq, i = state
+                               let classFile =
+                                   chunk
+                                   |> fromClassDefinitionToClassFile (sprintf "MapperBases%d" i)
+                               [classFile] |> Seq.append finalSeq, i+1) (Seq.empty, 0)
 
     let classFileWithTheIndividualMapperInterfaceDef =
         let classDef = Conventions.individualMapperInterfaceDefinitionWithGenericTypes
